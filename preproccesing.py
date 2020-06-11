@@ -43,18 +43,20 @@ def feature_creation(code_lines):
 			words.add(word)
 	words_list = list(words)
 	X = [words]
-	word_indices = {word: index for index, word in enumerate(tqdm(words_list, desc="Creating Feature indices"))}
+	word_indices = {word: index for index, word in
+					enumerate(tqdm(words_list, desc="Creating Feature indices"))}
+	linse = dict()
 	for sample in tqdm(code_lines, desc="Creating Sample Matrix"):
 		line = sample[0]
-		row = [0 for word in words]
+		row = {word: 0 for word in words}
 		for word in line.split():
 			if word in words:
-				row[word_indices[word]] += 1
-		X.append(row)
+				row[word] += 1
+		linse[line] = row
 
-	return DataFrame(X)
+	return DataFrame(linse)
+	## THIS WAS BAD ##
 
 
 if __name__ == '__main__':
 	train, validate, eval = get_train_validate_evaluate()
-	print(feature_creation(train.drop(columns=['Project']).values))

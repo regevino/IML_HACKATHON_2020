@@ -10,11 +10,15 @@ class BaseLine():
 		self.histogram = dict()
 
 	def train(self, df):
+		print(df)
 		for row in tqdm(df.values, desc="Training Baseline"):
-			for word in row[0].split():
+			line_of_code = row[0]
+			class_of_line = row[1]
+			weight_of_line = row[2]
+			for word in line_of_code.split():
 				if word not in self.histogram:
 					self.histogram[word] = [0 for i in range(7)]
-				self.histogram[word][row[1]] += 1
+				self.histogram[word][class_of_line] += 1*weight_of_line
 
 	def predict(self, X):
 		y_hat = []
@@ -23,14 +27,15 @@ class BaseLine():
 			for word in sample.split():
 				if word in self.histogram:
 					word_class = np.argmax(self.histogram[word])
-					classes[word_class]+=1
+					classes[word_class] += 1
 			y_hat.append(np.argmax(classes))
 		return y_hat
 
 
-def plot_emprical_error(df: DataFrame):
-	empirical_loss = np.count_nonzero(df['Project'] - df['Prediction'])/len(df['Project'])
+def plot_empirical_error(df: DataFrame):
+	empirical_loss = np.count_nonzero(df['Project'] - df['Prediction']) / len(df['Project'])
 	print(empirical_loss)
+
 
 if __name__ == '__main__':
 	model = BaseLine()
@@ -39,7 +44,7 @@ if __name__ == '__main__':
 	print(len(model.histogram))
 	y_hat = model.predict(train['line'])
 	train['Prediction'] = y_hat
-	plot_emprical_error(train)
+	plot_empirical_error(train)
 	y_hat = model.predict(val['line'])
 	val['Prediction'] = y_hat
-	plot_emprical_error(val)
+	plot_empirical_error(val)
