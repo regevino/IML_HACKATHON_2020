@@ -10,7 +10,6 @@ class BaseLine():
 		self.histogram = dict()
 
 	def train(self, df):
-		print(df)
 		for row in tqdm(df.values, desc="Training Baseline"):
 			line_of_code = row[0]
 			class_of_line = row[1]
@@ -29,7 +28,7 @@ class BaseLine():
 					word_class = np.argmax(self.histogram[word])
 					classes[word_class] += 1
 			y_hat.append(np.argmax(classes))
-		return y_hat
+		return np.array(y_hat)
 
 
 def plot_empirical_error(df: DataFrame):

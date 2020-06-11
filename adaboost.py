@@ -85,12 +85,11 @@ class AdaBoost(object):
         :return: y_hat : a prediction vector for X. shape=(num_samples)
         Predict only with max_t weak learners,
         """
-        prediction = [self.w[i] * self.h[i].predict(X) for i in
+        prediction = [self.h[i].predict(X) for i in
                       tqdm.tqdm(range(max_t), desc=f"Predicting for {max_t} iterations")]
-        # for i in tqdm.tqdm(range(max_t), desc=f"Predicting for {max_t} iterations"):
-        #     if self.h[i] != 0:
-        #         prediction += self.w[i] * self.h[i].predict(X)
-        return np.argmax(np.bincount(prediction))
+        prediction = np.transpose(prediction)
+        prediction = [np.bincount(prediction[i], minlength=7, weights=self.w) for i in range(len(prediction))]
+        return np.argmax(prediction)
 
     def error(self, X, y, max_t):
         """
@@ -109,9 +108,9 @@ class AdaBoost(object):
 
 if __name__ == '__main__':
     train, val ,eval = get_train_validate_evaluate()
-    model = AdaBoost(BaseLine, 1)
+    model = AdaBoost(BaseLine, 10)
     model.train(train)
-    print(model.error(val['line'], val['Project'], 1))
+    print(model.error(val['line'].values, val['Project'].values, 10))
 
 
 
