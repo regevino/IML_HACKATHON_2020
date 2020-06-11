@@ -19,21 +19,18 @@ CLASSIFIER_PICKLE_FILE = 'GitHubClassifierPickle'
 
 class GitHubClassifier:
 
-	def __init__(self, load_from_file=True):
+	def __init__(self, load_from_file=False):
 		if not load_from_file:
-			self.data = preproccesing.get_all_data()
-			self.histogram = preproccesing.create_histogram(self.data)
-			self.train_X = preproccesing.feature_creation(self.data.values, self.histogram)
-			self.train_y = self.data['Project'].values
+			data = preproccesing.get_all_data()
+			self.histogram = preproccesing.create_histogram(data)
+			train_X = preproccesing.feature_creation(data.values, self.histogram)
+			train_y = data['Project'].values
 			self.model = RandomForestClassifier(max_depth=25)
-			self.model.fit(self.train_X, self.train_y)
+			self.model.fit(train_X, train_y)
 		else:
 			with open(CLASSIFIER_PICKLE_FILE, 'rb') as pick:
 				stored_classifier = pickle.load(pick)
-			self.data = stored_classifier.data
 			self.histogram = stored_classifier.histogram
-			self.train_X = stored_classifier.train_X
-			self.train_y = stored_classifier.train_y
 			self.model = stored_classifier.model
 
 	def classify(self, X):
@@ -56,10 +53,11 @@ class GitHubClassifier:
 		with open(CLASSIFIER_PICKLE_FILE, 'wb') as pick:
 			pickle.dump(self, pick)
 
+
 if __name__ == '__main__':
 	start_time = time.time()
-	model = GitHubClassifier()
+	model = GitHubClassifier(False)
 	print(model.classify(preproccesing.get_all_data()['line'].values))
 	elapsed_time = time.time() - start_time
 	print('Elapsed: ', elapsed_time)
-	# model.store()
+	model.store()
