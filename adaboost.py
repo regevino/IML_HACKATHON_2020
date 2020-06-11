@@ -53,7 +53,7 @@ class AdaBoost(object):
 		samples_weights = np.zeros(shape=(self.T + 1, m))
 
 		# initialize weights (for 0's iteration) uniformly
-		samples_weights[0] = np.ones(shape=m) / m
+		samples_weights[0] = np.ones(shape=m) /m
 		stump_pred = []
 		for t in tqdm.tqdm(range(self.T), desc="Training Model"):
 			# fit  weak learner
@@ -65,7 +65,6 @@ class AdaBoost(object):
 			# calculate error and stump weight from weak learner prediction
 			old_stump_pred = stump_pred
 			stump_pred = self.h[t].predict(X)
-			assert not (np.array_equal(old_stump_pred, stump_pred))
 
 			err = curr_samples_weights[(stump_pred != y)].sum()
 			stump_weight = np.log((1 - err) / err) / 2

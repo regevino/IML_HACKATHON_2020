@@ -15,6 +15,7 @@ class BaseLine():
 			class_of_line = row[1]
 			weight_of_line = row[2]
 			for word in line_of_code.split():
+				word = word.strip()
 				if word not in self.histogram:
 					self.histogram[word] = [0 for i in range(7)]
 				self.histogram[word][class_of_line] += 1*weight_of_line
@@ -24,6 +25,7 @@ class BaseLine():
 		for sample in tqdm(X, desc="Predicting"):
 			classes = [0 for i in range(7)]
 			for word in sample.split():
+				word = word.strip()
 				if word in self.histogram:
 					word_class = np.argmax(self.histogram[word])
 					classes[word_class] += 1
@@ -39,6 +41,7 @@ def plot_empirical_error(df: DataFrame):
 if __name__ == '__main__':
 	model = BaseLine()
 	train, val, eval = get_train_validate_evaluate()
+	train['wieghts'] = np.ones(len(train['line']))
 	model.train(train)
 	print(len(model.histogram))
 	y_hat = model.predict(train['line'])

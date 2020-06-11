@@ -19,11 +19,19 @@ def get_all_data():
 	for file in tqdm(ALL_FILES, desc="Reading files..."):
 		with open(file, encoding='utf-8') as f:
 			file_lines = f.readlines()
+			file_lines = list(filter(line_cleaner, file_lines))
 			lines.extend(file_lines)
 			class_num = LABELS[file]
+
 			cls.extend([class_num for i in range(len(file_lines))])
 
 	return DataFrame({'line': lines, 'Project': cls})
+
+
+def line_cleaner(line: str):
+	if not line.strip():
+		return False
+	return True
 
 
 def split(df: DataFrame):
@@ -55,8 +63,11 @@ def feature_creation(code_lines):
 		linse[line] = row
 
 	return DataFrame(linse)
-	## THIS WAS BAD ##
+
+
+## THIS WAS BAD ##
 
 
 if __name__ == '__main__':
 	train, validate, eval = get_train_validate_evaluate()
+	print(train)
