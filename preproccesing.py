@@ -1,8 +1,14 @@
 from typing import Tuple
-
+import numpy as np
 from pandas import DataFrame
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from tqdm import tqdm
+from plotnine import *
 
 ALL_FILES = ["building_tool_all_data.txt", "espnet_all_data.txt", "horovod_all_data.txt",
 			 "jina_all_data.txt", "PaddleHub_all_data.txt", "PySolFC_all_data.txt",
@@ -44,30 +50,87 @@ def get_train_validate_evaluate() -> Tuple[DataFrame, DataFrame, DataFrame]:
 	return split(get_all_data())
 
 
-def feature_creation(code_lines):
-	words = set()
-	for row in tqdm(code_lines, desc="Finding Features"):
-		for word in row[0].split():
-			words.add(word)
-	words_list = list(words)
-	X = [words]
-	word_indices = {word: index for index, word in
-					enumerate(tqdm(words_list, desc="Creating Feature indices"))}
-	linse = dict()
-	for sample in tqdm(code_lines, desc="Creating Sample Matrix"):
-		line = sample[0]
-		row = {word: 0 for word in words}
-		for word in line.split():
-			if word in words:
-				row[word] += 1
-		linse[line] = row
-
-	return DataFrame(linse)
+def feature_creation(samples: np.ndarray, histogram: dict):
+	X = []
+	for row in tqdm(samples, desc="Creating Features"):
+		sample = row[0]
+		classes = [0 for i in range(7)]
+		for word in sample.split():
+			word = word.strip()
+			if not word:
+				break
+			if word in histogram:
+				# word_class = np.argmax(self.histogram[word])
+				classes[histogram[word]['class']] += histogram[word]['score']
+		X.append(classes)
+	# res_df = DataFrame({'X': X, 'y': df['Project'].values})
+	return X
 
 
-## THIS WAS BAD ##
+def create_histogram(df: DataFrame):
+	histogram = dict()
+	for row in tqdm(df.values, desc="Creating Histogram"):
+		line_of_code = row[0]
+		class_of_line = row[1]
+		for word in line_of_code.split():
+			word = word.strip()
+			if not word:
+				break
+			if word not in histogram:
+				histogram[word] = [0 for i in range(7)]
+			histogram[word][class_of_line] += 1
+
+	for word in tqdm(histogram, desc="Normalizing"):
+		histogram[word] = (np.array(histogram[word]) - np.min(histogram[word])) / np.max(
+			histogram[word])
+		classification = np.argmax(histogram[word])
+		_score = score(histogram, word, classification)
+		histogram[word] = dict()
+		histogram[word]['class'] = classification
+		histogram[word]['score'] = _score
+	return histogram
+
+
+def score(histogram, word, classification):
+	return (histogram[word][classification] - np.mean(histogram[word])) ** 2
 
 
 if __name__ == '__main__':
 	train, validate, eval = get_train_validate_evaluate()
-	print(train)
+	histogram = create_histogram(train)
+
+	train_X = feature_creation(train.values, histogram)
+	val_X = feature_creation(validate.values, histogram)
+
+	eval_X = feature_creation(eval.values, histogram)
+
+
+	# alphas = [1, 5, 20, 30, 70, 100]
+	# score = []
+	# type = []
+	# depths_k = []
+	# for alpha in tqdm(alphas, desc="Adaboost for iterations"):
+	# 	model = AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=2), n_estimators=alpha)
+	# 	model.fit(train_X, train_y)
+	# 	score.append(model.score(train_X, train_y))
+	# 	type.append('train')
+	# 	score.append(model.score(val_X, val_y))
+	# 	type.append('validate')
+	# 	depths_k.append(alpha)
+	# 	depths_k.append(alpha)
+
+	model = RandomForestClassifier(max_depth=25)
+	model.fit(train_X, train_y)
+	# print(model.score(train_X, train_y))
+	# # type.append('train')
+	# print(model.score(val_X, val_y))
+	print(model.score(eval_X, eval_y))
+
+# type.append('validate')
+	# depths_k.append(depth)
+	# depths_k.append(depth)
+
+	# plot = ggplot(DataFrame({"iterations": depths_k, 'score': score, 'type': type}))
+	# plot += geom_line(aes(x='iterations', y='score', linetype='type'))
+	# ggsave(plot, 'Adaboost depth 2.png')
+	# print(plot)

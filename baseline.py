@@ -26,6 +26,11 @@ class BaseLine():
 
 		for word in tqdm(self.histogram, desc="Normalizing"):
 			self.histogram[word] = (np.array(self.histogram[word]) - np.min(self.histogram[word])) / np.max(self.histogram[word])
+			classification = np.argmax(self.histogram[word])
+			score = self.score(word, classification)
+			self.histogram[word] = dict()
+			self.histogram[word]['class'] = classification
+			self.histogram[word]['score'] = score
 
 	def predict(self, X):
 		y_hat = []
@@ -36,18 +41,18 @@ class BaseLine():
 				if not word:
 					break
 				if word in self.histogram:
-					word_class = np.argmax(self.histogram[word])
-					classes[word_class] += self.score(word, word_class)
+					# word_class = np.argmax(self.histogram[word])
+					classes[self.histogram[word]['class']] += self.histogram[word]['score']
 			y_hat.append(np.argmax(classes))
 		return np.array(y_hat)
 
 	def score(self, word, classification):
-		return self.histogram[word][classification] - np.mean(self.histogram[word])
+		return (self.histogram[word][classification] - np.mean(self.histogram[word]))**2
 
 
 def plot_empirical_error(df: DataFrame):
 	empirical_loss = np.count_nonzero(df['Project'] - df['Prediction']) / len(df['Project'])
-	print(empirical_loss)
+	print(1 - empirical_loss)
 
 
 if __name__ == '__main__':
