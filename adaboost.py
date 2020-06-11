@@ -9,10 +9,12 @@ Author: Gad Zalcberg
 Date: February, 2019
 
 """
+import sys
+
 import numpy as np
 from pandas import DataFrame
 from matplotlib import pyplot as plt
-from plotnine import *
+# from plotnine import *
 import tqdm
 from preproccesing import get_train_validate_evaluate
 from baseline import BaseLine
@@ -89,7 +91,6 @@ class AdaBoost(object):
                       tqdm.tqdm(range(max_t), desc=f"Predicting for {max_t} iterations")]
         prediction = np.transpose(prediction)
         prediction = [np.bincount(prediction[i], minlength=7, weights=self.w) for i in range(len(prediction))]
-        print(prediction)
         return np.argmax(prediction, axis=1)
 
     def error(self, X, y, max_t):
@@ -109,10 +110,11 @@ class AdaBoost(object):
 
 
 if __name__ == '__main__':
+    num_to_boost = sys.argv[1]
     train, val ,eval = get_train_validate_evaluate()
-    model = AdaBoost(BaseLine, 10)
+    model = AdaBoost(BaseLine, num_to_boost)
     model.train(train)
-    print(model.error(val['line'].values, val['Project'].values, 10))
+    print(model.error(val['line'].values, val['Project'].values, num_to_boost))
 
 
 
