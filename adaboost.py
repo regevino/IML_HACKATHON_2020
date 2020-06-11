@@ -65,7 +65,7 @@ class AdaBoost(object):
 			# calculate error and stump weight from weak learner prediction
 			old_stump_pred = stump_pred
 			stump_pred = self.h[t].predict(X)
-
+			assert not (np.array_equal(old_stump_pred, stump_pred))
 
 			err = curr_samples_weights[(stump_pred != y)].sum()
 			stump_weight = np.log((1 - err) / err) / 2
