@@ -110,7 +110,7 @@ class AdaBoost(object):
 
 
 if __name__ == '__main__':
-    num_to_boost = sys.argv[1]
+    num_to_boost = int(sys.argv[1])
     train, val ,eval = get_train_validate_evaluate()
     model = AdaBoost(BaseLine, num_to_boost)
     model.train(train)
