@@ -1,14 +1,9 @@
 from typing import Tuple
 import numpy as np
 from pandas import DataFrame
-from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
 from tqdm import tqdm
-from plotnine import *
 
 ALL_FILES = ["building_tool_all_data.txt", "espnet_all_data.txt", "horovod_all_data.txt",
 			 "jina_all_data.txt", "PaddleHub_all_data.txt", "PySolFC_all_data.txt",
@@ -104,7 +99,6 @@ if __name__ == '__main__':
 
 	eval_X = feature_creation(eval.values, histogram)
 
-
 	# alphas = [1, 5, 20, 30, 70, 100]
 	# score = []
 	# type = []
@@ -119,18 +113,18 @@ if __name__ == '__main__':
 	# 	depths_k.append(alpha)
 	# 	depths_k.append(alpha)
 
-	model = RandomForestClassifier(max_depth=25)
-	model.fit(train_X, train_y)
-	# print(model.score(train_X, train_y))
-	# # type.append('train')
-	# print(model.score(val_X, val_y))
-	print(model.score(eval_X, eval_y))
+	# model = RandomForestClassifier(max_depth=25)
+	# model.fit(train_X, train_y)
+	# # print(model.score(train_X, train_y))
+	# # # type.append('train')
+	# # print(model.score(val_X, val_y))
+	# print(model.score(eval_X, eval_y))
 
 # type.append('validate')
-	# depths_k.append(depth)
-	# depths_k.append(depth)
+# depths_k.append(depth)
+# depths_k.append(depth)
 
-	# plot = ggplot(DataFrame({"iterations": depths_k, 'score': score, 'type': type}))
-	# plot += geom_line(aes(x='iterations', y='score', linetype='type'))
-	# ggsave(plot, 'Adaboost depth 2.png')
-	# print(plot)
+# plot = ggplot(DataFrame({"iterations": depths_k, 'score': score, 'type': type}))
+# plot += geom_line(aes(x='iterations', y='score', linetype='type'))
+# ggsave(plot, 'Adaboost depth 2.png')
+# print(plot)
