@@ -1,3 +1,5 @@
+import re
+
 from pandas import DataFrame
 from tqdm import tqdm
 import numpy as np
@@ -16,9 +18,14 @@ class BaseLine():
 			weight_of_line = row[2]
 			for word in line_of_code.split():
 				word = word.strip()
+				if not word:
+					break
 				if word not in self.histogram:
 					self.histogram[word] = [0 for i in range(7)]
-				self.histogram[word][class_of_line] += 1*weight_of_line
+				self.histogram[word][class_of_line] += weight_of_line
+
+		for word in tqdm(self.histogram, desc="Normalizing"):
+			self.histogram[word] = (np.array(self.histogram[word]) - np.min(self.histogram[word])) / np.max(self.histogram[word])
 
 	def predict(self, X):
 		y_hat = []
@@ -26,11 +33,16 @@ class BaseLine():
 			classes = [0 for i in range(7)]
 			for word in sample.split():
 				word = word.strip()
+				if not word:
+					break
 				if word in self.histogram:
 					word_class = np.argmax(self.histogram[word])
-					classes[word_class] += 1
+					classes[word_class] += self.score(word, word_class)
 			y_hat.append(np.argmax(classes))
 		return np.array(y_hat)
+
+	def score(self, word, classification):
+		return self.histogram[word][classification] - np.mean(self.histogram[word])
 
 
 def plot_empirical_error(df: DataFrame):
