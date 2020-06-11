@@ -89,7 +89,8 @@ class AdaBoost(object):
                       tqdm.tqdm(range(max_t), desc=f"Predicting for {max_t} iterations")]
         prediction = np.transpose(prediction)
         prediction = [np.bincount(prediction[i], minlength=7, weights=self.w) for i in range(len(prediction))]
-        return np.argmax(prediction)
+        print(prediction)
+        return np.argmax(prediction, axis=1)
 
     def error(self, X, y, max_t):
         """
@@ -100,7 +101,8 @@ class AdaBoost(object):
         :param max_t: integer < self.T: the number of classifiers to use for the classification
         :return: error : the ratio of the correct predictions when predict only with max_t weak learners (float)
         """
-        return np.mean(self.predict(X, max_t) != y)
+        result = self.predict(X, max_t) != y
+        return np.mean(result)
 
 
 
