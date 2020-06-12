@@ -11,8 +11,9 @@ import gzip
 import pickle
 import time
 
-from sklearn.ensemble import RandomForestClassifier
-
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+import numpy as np
 import preproccesing
 
 CLASSIFIER_PICKLE_FILE = 'GitHubClassifierPickle'
@@ -24,7 +25,7 @@ class GitHubClassifier:
 		if not load_from_file:
 			data = preproccesing.get_all_data()
 			self.histogram = preproccesing.create_histogram(data)
-			self.train_X = preproccesing.feature_creation(data.values, self.histogram)
+			self.train_X = preproccesing.feature_creation(data['line'].values, self.histogram)
 			self.train_y = data['Project'].values
 			# self.model = RandomForestClassifier(max_depth=25)
 		else:
@@ -53,6 +54,7 @@ class GitHubClassifier:
 		model = RandomForestClassifier(max_depth=25)
 		model.fit(self.train_X, self.train_y)
 		return model.predict(preproccesing.feature_creation(X, self.histogram))
+		# return np.argmax(preproccesing.feature_creation(X, self.histogram), axis=1)
 
 	def store(self):
 		with gzip.open(CLASSIFIER_PICKLE_FILE, 'wb') as pick:
@@ -65,4 +67,4 @@ if __name__ == '__main__':
 	print(model.classify(preproccesing.get_all_data()['line'].values))
 	elapsed_time = time.time() - start_time
 	print('Elapsed: ', elapsed_time)
-	# model.store()
+	model.store()

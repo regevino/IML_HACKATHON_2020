@@ -48,7 +48,7 @@ def get_train_validate_evaluate() -> Tuple[DataFrame, DataFrame, DataFrame]:
 def feature_creation(samples: np.ndarray, histogram: dict):
 	X = []
 	for row in tqdm(samples, desc="Creating Features"):
-		sample = row[0]
+		sample = row
 		classes = [0 for i in range(7)]
 		for word in sample.split():
 			word = word.strip()
@@ -94,10 +94,11 @@ if __name__ == '__main__':
 	train, validate, eval = get_train_validate_evaluate()
 	histogram = create_histogram(train)
 
-	train_X = feature_creation(train.values, histogram)
-	val_X = feature_creation(validate.values, histogram)
+	train_X = feature_creation(train['line'].values, histogram)
+	train_y = train['Project'].values
+	val_X = feature_creation(validate['line'].values, histogram)
 
-	eval_X = feature_creation(eval.values, histogram)
+	eval_X = feature_creation(eval['line'].values, histogram)
 
 	# alphas = [1, 5, 20, 30, 70, 100]
 	# score = []
@@ -113,9 +114,9 @@ if __name__ == '__main__':
 	# 	depths_k.append(alpha)
 	# 	depths_k.append(alpha)
 
-	# model = RandomForestClassifier(max_depth=25)
-	# model.fit(train_X, train_y)
-	# # print(model.score(train_X, train_y))
+	model = RandomForestClassifier(max_depth=5)
+	model.fit(train_X, train_y)
+	print(model.score(train_X, train_y))
 	# # # type.append('train')
 	# # print(model.score(val_X, val_y))
 	# print(model.score(eval_X, eval_y))
