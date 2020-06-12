@@ -1,17 +1,24 @@
-import re
-
 from pandas import DataFrame
 from tqdm import tqdm
 import numpy as np
 from preproccesing import get_train_validate_evaluate
 
 
+# This file contains out initial baseline learner, with some improvements we made along the way.
+
 class BaseLine():
 
 	def __init__(self):
+		"""
+		Create baseline learner.
+		"""
 		self.histogram = dict()
 
 	def train(self, df):
+		"""
+		Train learner on the data (create histogram).
+		:param df: DAtaFrame containing data.
+		"""
 		for row in tqdm(df.values, desc="Training Baseline"):
 			line_of_code = row[0]
 			class_of_line = row[1]
@@ -33,6 +40,11 @@ class BaseLine():
 			self.histogram[word]['score'] = score
 
 	def predict(self, X):
+		"""
+		Create a prediction with base learner.
+		:param X: Data to predict for.
+		:return: numpy array containing prediction labels.
+		"""
 		y_hat = []
 		for sample in tqdm(X, desc="Predicting"):
 			classes = [0 for i in range(7)]
@@ -41,16 +53,25 @@ class BaseLine():
 				if not word:
 					break
 				if word in self.histogram:
-					# word_class = np.argmax(self.histogram[word])
 					classes[self.histogram[word]['class']] += self.histogram[word]['score']
 			y_hat.append(np.argmax(classes))
 		return np.array(y_hat)
 
 	def score(self, word, classification):
+		"""
+		Score function for words.
+		:param word: words to score.
+		:param classification: Class to score for.
+		:return: The score for this word.
+		"""
 		return (self.histogram[word][classification] - np.mean(self.histogram[word]))**2
 
 
 def plot_empirical_error(df: DataFrame):
+	"""
+	An ironically named function (for historical reasons). It actually just prints the empirical 0-1 loss.
+	:param df: Data
+	"""
 	empirical_loss = np.count_nonzero(df['Project'] - df['Prediction']) / len(df['Project'])
 	print(1 - empirical_loss)
 

@@ -9,11 +9,8 @@ Authors:
 """
 import gzip
 import pickle
-import time
+from sklearn.ensemble import RandomForestClassifier
 
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
-import numpy as np
 import preproccesing
 
 CLASSIFIER_PICKLE_FILE = 'GitHubClassifierPickle'
@@ -22,20 +19,21 @@ CLASSIFIER_PICKLE_FILE = 'GitHubClassifierPickle'
 class GitHubClassifier:
 
 	def __init__(self, load_from_file=True):
+		"""
+		Craete a classifier. by default, load the classifier from a file
+		:param load_from_file: Create a new classifier if False, otherwise unpickle form file (default: True)
+		"""
 		if not load_from_file:
 			data = preproccesing.get_all_data()
 			self.histogram = preproccesing.create_histogram(data)
 			self.train_X = preproccesing.feature_creation(data['line'].values, self.histogram)
 			self.train_y = data['Project'].values
-			# self.model = RandomForestClassifier(max_depth=25)
 		else:
 			with gzip.open(CLASSIFIER_PICKLE_FILE, 'rb') as pick:
 				stored_classifier = pickle.load(pick)
 			self.histogram = stored_classifier.histogram
-			# self.model = stored_classifier.model
 			self.train_X = stored_classifier.train_X
 			self.train_y = stored_classifier.train_y
-			# self.model = stored_classifier.model
 
 	def classify(self, X):
 		"""
@@ -54,17 +52,12 @@ class GitHubClassifier:
 		model = RandomForestClassifier(max_depth=25)
 		model.fit(self.train_X, self.train_y)
 		return model.predict(preproccesing.feature_creation(X, self.histogram))
-		# return np.argmax(preproccesing.feature_creation(X, self.histogram), axis=1)
 
 	def store(self):
+		"""
+		Store this classifier in a file. Forest is not stored because it is very large and have enough time
+		to fit it before prediction.
+		:return:
+		"""
 		with gzip.open(CLASSIFIER_PICKLE_FILE, 'wb') as pick:
 			pickle.dump(self, pick)
-
-
-if __name__ == '__main__':
-	start_time = time.time()
-	model = GitHubClassifier()
-	print(model.classify(preproccesing.get_all_data()['line'].values))
-	elapsed_time = time.time() - start_time
-	print('Elapsed: ', elapsed_time)
-	model.store()
